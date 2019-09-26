@@ -1,3 +1,4 @@
+import Controller.ControlPanel;
 import Controller.HomeScreen;
 import javafx.application.Application;
 import javafx.event.EventHandler;
@@ -9,15 +10,21 @@ public class App extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        HomeScreen home = new HomeScreen();
-        Scene scene = new Scene(home);
+        ControlPanel controlPanel = new ControlPanel();
+        Scene scene = new Scene(controlPanel);
+//        HomeScreen homeScreen = new HomeScreen();
+//        Scene scene = new Scene(homeScreen);
         primaryStage.setScene(scene);
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
-                if(event.equals(WindowEvent.WINDOW_CLOSE_REQUEST)){
-                    System.exit(0);
+                System.out.println("Finishing");
+                try {
+                    controlPanel.shutdown();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
+                System.exit(0);
             }
         });
         primaryStage.show();

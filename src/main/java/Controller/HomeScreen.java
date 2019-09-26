@@ -1,6 +1,7 @@
 package Controller;
 
 import Interfaces.VideoPlayer;
+import Manager.ApplicationTimer;
 import Manager.Exposure;
 import Manager.ExposureFromCamera;
 import Manager.ExposureFromVideo;
@@ -67,6 +68,8 @@ public class HomeScreen extends AnchorPane implements VideoPlayer {
                 exposure = new ExposureFromVideo(video);
                 exposure.setVideoPlayer(HomeScreen.this);
                 exposure.play();
+                System.out.println(exposure.getFramerate());
+                System.out.println(exposure.getRuntime());
             }
         }
     };
