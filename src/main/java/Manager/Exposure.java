@@ -7,6 +7,8 @@ import org.bytedeco.javacpp.indexer.UByteRawIndexer;
 import org.bytedeco.javacv.*;
 import org.bytedeco.opencv.global.opencv_core;
 import org.bytedeco.opencv.opencv_core.Mat;
+import org.bytedeco.opencv.opencv_core.MatExpr;
+import org.bytedeco.opencv.opencv_core.MatVector;
 
 import java.awt.image.BufferedImage;
 
@@ -79,7 +81,8 @@ public abstract class Exposure {
             public void run() {
                 try {
                     grabber.restart();
-                    grabber.setFrameNumber((int) (startTime * getFramerate()));
+                    if(startTime != 0)
+                        grabber.setFrameNumber((int) (startTime * getFramerate()));
                     long sampleCount = 0;
                     int skipInterval = (int) Math.round(getFramerate() / sampleRate);
                     System.out.println("Skip Frames: " + skipInterval);
@@ -102,10 +105,11 @@ public abstract class Exposure {
                             continue;
                         }
                         Mat frame = matConverter.convert(_frame);
-
                         sampleCount++;
+                        System.out.println(grabber.getFrameNumber());
+                        System.out.println("Frames Identical: "+areMatIdentical(exposure, frame));
                         if (exposure == null) {
-                            exposure = frame;
+                            exposure = frame.clone();
                         } else {
                             switch (method) {
                                 case Average:
@@ -137,6 +141,11 @@ public abstract class Exposure {
             }
 
             Mat CombineAdditive(Mat exposure, Mat frame) {
+                if(areMatIdentical(exposure, frame)) {
+                    //System.out.println("Frames are Identical");
+                    return exposure;
+                }
+                System.out.println("New Frame");
                 UByteRawIndexer exposureIndexer = exposure.createIndexer();
                 UByteRawIndexer frameIndexer = frame.createIndexer();
                 for (int y = 0; y < frame.rows(); y++) {
@@ -151,13 +160,9 @@ public abstract class Exposure {
                         }
                         double exposureBrightness = calculatePixelBrightness(exposurePixel);
                         double frameBrightness = calculatePixelBrightness(framePixel);
-                        System.out.print(exposurePixel.toString() + ":" + exposureBrightness);
-                        System.out.print(" - ");
-                        System.out.println(framePixel.toString() + ":" + frameBrightness);
-                        System.out.flush();
                         if (frameBrightness > exposureBrightness) {
                             for (int c = 0; c < exposure.channels(); c++) {
-                                exposureIndexer.put(y, x, c, exposurePixel[c]);
+                                exposureIndexer.put(y, x, c, framePixel[c]);
                             }
                         }
                     }
@@ -233,6 +238,27 @@ public abstract class Exposure {
 
     private static double calculatePixelBrightness(int[] pixel) {
         return (pixel[0] * 0.3) + (pixel[1] * 0.59) + (pixel[2] * 0.11);
+    }
+
+    private static boolean areMatIdentical(Mat a, Mat b) {
+        if( a == null || b == null){
+            return false;
+        }
+        if( a.cols() == b.cols() && a.rows() == b.rows() && a.channels() == b.channels()){
+            MatExpr result = opencv_core.subtract(a, b);
+            MatVector diff = new MatVector();
+            opencv_core.split(result.asMat(), diff);
+            if(opencv_core.countNonZero(diff.get(0)) == 0
+                    && opencv_core.countNonZero(diff.get(1)) == 0
+                    && opencv_core.countNonZero(diff.get(2)) == 0)
+            {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     private static String getTimeStamp(long time) {

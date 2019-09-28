@@ -45,6 +45,10 @@ public class ControlPanel extends AnchorPane {
     @FXML
     public Slider sldSampleRate;
     @FXML
+    public RadioButton btnAverage;
+    @FXML
+    public RadioButton btnAdditive;
+    @FXML
     public Button btnSelectVideo;
     @FXML
     public ProgressBar pgbExposureProgress;
@@ -85,6 +89,8 @@ public class ControlPanel extends AnchorPane {
         spnExposureDuration.setDisable(true);
         spnStartTime.setDisable(true);
         sldSampleRate.setDisable(true);
+        btnAdditive.setDisable(true);
+        btnAverage.setDisable(true);
         btnSelectVideo.setOnAction(videoSelectActionEvent);
         pnStart.setVisible(true);
         pnComplete.setVisible(false);
@@ -136,6 +142,9 @@ public class ControlPanel extends AnchorPane {
                     sldSampleRate.setValue(Math.round(newValue.doubleValue()));
                     txtFrameRate.setText(Math.round(newValue.doubleValue()) + " FPS");
                 });
+                btnAdditive.setDisable(false);
+                btnAverage.setDisable(false);
+                btnAverage.setSelected(true);
             }
         }
     };
@@ -147,6 +156,12 @@ public class ControlPanel extends AnchorPane {
                 ApplicationTimer.getInstance().unregister(progressUpdater);
                 progressUpdater = null;
             }
+            btnStart.setDisable(true);
+            spnExposureDuration.setDisable(true);
+            spnStartTime.setDisable(true);
+            sldSampleRate.setDisable(true);
+            btnAdditive.setDisable(true);
+            btnAverage.setDisable(true);
             pnProgress.setVisible(true);
             pnComplete.setVisible(false);
             long durationFrames = (long) (spnExposureDuration.getValue() * exposure.getFramerate());
@@ -154,7 +169,13 @@ public class ControlPanel extends AnchorPane {
             exposure.setStartTime((long) (spnStartTime.getValue() * 1000000));
             exposureCreationComplete = false;
             System.out.println("Duration: " + spnExposureDuration.getValue() + "s");
-            exposureThread = exposure.createExposure(durationFrames, sampleRate, Exposure.ExposureMethod.Average);
+            Exposure.ExposureMethod method = Exposure.ExposureMethod.Average;
+            if(btnAverage.isSelected()){
+                method = Exposure.ExposureMethod.Average;
+            } else if (btnAdditive.isSelected()){
+                method = Exposure.ExposureMethod.Additive;
+            }
+            exposureThread = exposure.createExposure(durationFrames, sampleRate, method);
             progressUpdater = t -> {
                 pgbExposureProgress.setProgress(exposure.getExposureProgress());
                 lblElapsed.setText(exposure.getElapsedTimeStamp());
@@ -166,6 +187,12 @@ public class ControlPanel extends AnchorPane {
                     pnComplete.setVisible(true);
                     btnSave.setOnAction(saveExposureEvent);
                     btnView.setOnAction(viewExposureEvent);
+                    btnStart.setDisable(false);
+                    spnExposureDuration.setDisable(false);
+                    spnStartTime.setDisable(false);
+                    sldSampleRate.setDisable(false);
+                    btnAdditive.setDisable(false);
+                    btnAverage.setDisable(false);
                 }
             };
             ApplicationTimer.getInstance().register(progressUpdater);
@@ -203,7 +230,7 @@ public class ControlPanel extends AnchorPane {
         if (progressUpdater != null) {
             ApplicationTimer.getInstance().unregister(progressUpdater);
         }
-        if (exposure.isRunning()) {
+        if (exposure != null && exposure.isRunning()) {
             exposure.setInterrupted(true);
         }
     }
