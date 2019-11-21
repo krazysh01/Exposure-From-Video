@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_exposure-from-video" default="compile.module.exposure-from-video">
+  <dirname property="module.exposure-from-video.basedir" file="${ant.file.module_exposure-from-video}"/>
+  
+  <property name="module.jdk.home.exposure-from-video" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.exposure-from-video" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.exposure-from-video" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.exposure-from-video" value="-encoding UTF-8 -source 13 -target 13 ${compiler.args}"/>
+  
+  <property name="exposure-from-video.output.dir" value="${module.exposure-from-video.basedir}/../dst/production/Exposure-From-Video"/>
+  <property name="exposure-from-video.testoutput.dir" value="${module.exposure-from-video.basedir}/../dst/test/Exposure-From-Video"/>
+  
+  <path id="exposure-from-video.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="exposure-from-video.module.production.classpath">
+    <path refid="${module.jdk.classpath.exposure-from-video}"/>
+  </path>
+  
+  <path id="exposure-from-video.runtime.production.module.classpath">
+    <pathelement location="${exposure-from-video.output.dir}"/>
+  </path>
+  
+  <path id="exposure-from-video.module.classpath">
+    <path refid="${module.jdk.classpath.exposure-from-video}"/>
+    <pathelement location="${exposure-from-video.output.dir}"/>
+  </path>
+  
+  <path id="exposure-from-video.runtime.module.classpath">
+    <pathelement location="${exposure-from-video.testoutput.dir}"/>
+    <pathelement location="${exposure-from-video.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.exposure-from-video">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.exposure-from-video">
+    <patternset refid="excluded.from.module.exposure-from-video"/>
+  </patternset>
+  
+  
+  <target name="compile.module.exposure-from-video" depends="compile.module.exposure-from-video.production,compile.module.exposure-from-video.tests" description="Compile module Exposure-From-Video"/>
+  
+  <target name="compile.module.exposure-from-video.production" depends="register.custom.compilers" description="Compile module Exposure-From-Video; production classes"/>
+  
+  <target name="compile.module.exposure-from-video.tests" depends="register.custom.compilers,compile.module.exposure-from-video.production" description="compile module Exposure-From-Video; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.exposure-from-video" description="cleanup module">
+    <delete dir="${exposure-from-video.output.dir}"/>
+    <delete dir="${exposure-from-video.testoutput.dir}"/>
+  </target>
+</project>

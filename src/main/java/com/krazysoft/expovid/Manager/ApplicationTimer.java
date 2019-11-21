@@ -1,4 +1,4 @@
-package Manager;
+package com.krazysoft.expovid.Manager;
 
 import javafx.animation.AnimationTimer;
 

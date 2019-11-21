@@ -1,4 +1,4 @@
-package Interfaces;
+package com.krazysoft.expovid.Interfaces;
 
 import javafx.scene.image.Image;
 

@@ -43,20 +43,22 @@
       </TitledPane>
       <AnchorPane layoutX="200.0" layoutY="7.0" minHeight="-Infinity" prefHeight="120.0" prefWidth="586.0" AnchorPane.bottomAnchor="250.0" AnchorPane.leftAnchor="7.0" AnchorPane.rightAnchor="7.0" AnchorPane.topAnchor="7.0">
          <children>
-            <AnchorPane fx:id="pnStart" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <AnchorPane fx:id="pnStart" prefHeight="200.0" prefWidth="200.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
                   <Button fx:id="btnSelectVideo" mnemonicParsing="false" text="Select Video" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="240.0" AnchorPane.rightAnchor="240.0" AnchorPane.topAnchor="50.0" />
                </children>
             </AnchorPane>
-            <AnchorPane fx:id="pnComplete" prefHeight="200.0" prefWidth="200.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <AnchorPane fx:id="pnComplete" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
                   <Label fx:id="lblCompleted" alignment="CENTER" contentDisplay="CENTER" prefHeight="27.0" prefWidth="239.0" text="Exposure Creation Completed" textAlignment="CENTER" AnchorPane.leftAnchor="170.0" AnchorPane.rightAnchor="170.0" AnchorPane.topAnchor="14.0">
                      <font>
                         <Font size="18.0" />
                      </font>
                   </Label>
-                  <Button fx:id="btnView" maxWidth="50.0" minWidth="50.0" mnemonicParsing="false" prefWidth="50.0" text="View" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="150.0" AnchorPane.topAnchor="80.0" />
-                  <Button fx:id="btnSave" maxWidth="-Infinity" minWidth="50.0" mnemonicParsing="false" prefWidth="50.0" text="Save" AnchorPane.bottomAnchor="40.0" AnchorPane.rightAnchor="150.0" AnchorPane.topAnchor="80.0" />
+                  <Button fx:id="btnView" maxWidth="50.0" minWidth="50.0" mnemonicParsing="false" prefWidth="50.0" text="View" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="150.0" AnchorPane.rightAnchor="300.0" AnchorPane.topAnchor="70.0" />
+                  <Button fx:id="btnSave" maxWidth="-Infinity" minWidth="50.0" mnemonicParsing="false" prefWidth="50.0" text="Save" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="300.0" AnchorPane.rightAnchor="150.0" AnchorPane.topAnchor="70.0" />
+                  <Button fx:id="btnSelectNewVideo" layoutX="267.0" layoutY="104.0" mnemonicParsing="false" text="Select New Video" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="150.0" AnchorPane.rightAnchor="150.0" AnchorPane.topAnchor="105.0" />
+                  <Label fx:id="lblFinalDuration" alignment="CENTER" layoutX="286.0" layoutY="41.0" text="Duration: 00000000000000000000000" AnchorPane.bottomAnchor="80.0" AnchorPane.leftAnchor="150.0" AnchorPane.rightAnchor="150.0" AnchorPane.topAnchor="45.0" />
                </children>
             </AnchorPane>
             <AnchorPane fx:id="pnProgress" prefHeight="200.0" prefWidth="200.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
