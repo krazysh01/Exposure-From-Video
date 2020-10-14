@@ -53,6 +53,8 @@ public class ControlPanel extends AnchorPane {
     @FXML
     public RadioButton btnAdditive;
     @FXML
+    public RadioButton btnExperimental;
+    @FXML
     public Button btnSelectVideo;
     @FXML
     public ProgressBar pgbExposureProgress;
@@ -98,6 +100,7 @@ public class ControlPanel extends AnchorPane {
         spnStartTime.setDisable(true);
         sldSampleRate.setDisable(true);
         btnAdditive.setDisable(true);
+        btnExperimental.setDisable(true);
         btnAverage.setDisable(true);
         btnSelectVideo.setOnAction(videoSelectActionEvent);
         pnStart.setVisible(true);
@@ -154,6 +157,7 @@ public class ControlPanel extends AnchorPane {
                 });
                 btnAdditive.setDisable(false);
                 btnAverage.setDisable(false);
+                btnExperimental.setDisable(false);
                 btnAverage.setSelected(true);
             }
         }
@@ -172,6 +176,7 @@ public class ControlPanel extends AnchorPane {
             sldSampleRate.setDisable(true);
             btnAdditive.setDisable(true);
             btnAverage.setDisable(true);
+            btnExperimental.setDisable(true);
             pnProgress.setVisible(true);
             pnComplete.setVisible(false);
             btnCompleteExposure.setOnAction(completeExposureEvent);
@@ -185,6 +190,8 @@ public class ControlPanel extends AnchorPane {
                 method = Exposure.ExposureMethod.Average;
             } else if (btnAdditive.isSelected()) {
                 method = Exposure.ExposureMethod.Additive;
+            } else if (btnExperimental.isSelected()) {
+                method = Exposure.ExposureMethod.Experimental;
             }
             exposureThread = exposure.createExposure(durationFrames, sampleRate, method);
             progressUpdater = t -> {
@@ -206,6 +213,7 @@ public class ControlPanel extends AnchorPane {
                     sldSampleRate.setDisable(false);
                     btnAdditive.setDisable(false);
                     btnAverage.setDisable(false);
+                    btnExperimental.setDisable(false);
                 }
             };
             ApplicationTimer.getInstance().register(progressUpdater);

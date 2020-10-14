@@ -12,9 +12,11 @@ import org.bytedeco.opencv.opencv_core.MatVector;
 
 import java.awt.image.BufferedImage;
 
+import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;
+
 public abstract class Exposure {
 
-    public enum ExposureMethod {Additive, Average}
+    public enum ExposureMethod {Additive, Average, Experimental}
 
     protected VideoPlayer player;
     protected FFmpegFrameGrabber grabber;
@@ -130,6 +132,9 @@ public abstract class Exposure {
                             case Additive:
                                 exposure = CombineAdditive(exposure, frame);
                                 break;
+                            case Experimental:
+                                exposure = CombineExperimental(exposure, frame, sampleCount);
+                                break;
                         }
                         exposureProgress = (sampleCount * 1.0) / totalSample;
                         estimatedDuration = (long) (elapsedTime / exposureProgress);
@@ -204,8 +209,37 @@ public abstract class Exposure {
                 }
                 double frame_average = 1.0 / frameCount;
                 Mat result = new Mat();
+//                double frame_average = 0.5;
                 opencv_core.addWeighted(frame, frame_average, exposure, 1 - frame_average, 0.0, result);
                 return result;
+            }
+
+            private Mat CombineExperimental(Mat exposure, Mat frame, long sampleCount) {
+                if(exposure == null){
+                    return frame.clone();
+                }
+                Mat average = exposure.clone();
+//                System.out.println("New Frame");
+                UByteRawIndexer averageIndexer = average.createIndexer();
+                UByteRawIndexer exposureIndexer = exposure.createIndexer();
+                UByteRawIndexer frameIndexer = frame.createIndexer();
+                for (int y = 0; y < frame.rows(); y++) {
+                    for (int x = 0; x < frame.cols(); x++) {
+                        int[] exposurePixel = new int[exposure.channels()];
+                        for (int c = 0; c < exposure.channels(); c++) {
+                            exposurePixel[c] = exposureIndexer.get(y, x, c);
+                        }
+                        int[] framePixel = new int[frame.channels()];
+                        for (int c = 0; c < frame.channels(); c++) {
+                            framePixel[c] = frameIndexer.get(y, x, c);
+                        }
+                        for (int c = 0; c < exposure.channels(); c++) {
+                            int pixelAverage = (int) ((int) ((sampleCount * exposurePixel[c]) + (1 * framePixel[c])) / (sampleCount + 1));
+                            averageIndexer.put(y, x, c, pixelAverage);
+                        }
+                    }
+                }
+                return average;
             }
 
         };
