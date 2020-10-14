@@ -48,7 +48,7 @@
                   <Button fx:id="btnSelectVideo" mnemonicParsing="false" text="Select Video" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="240.0" AnchorPane.rightAnchor="240.0" AnchorPane.topAnchor="50.0" />
                </children>
             </AnchorPane>
-            <AnchorPane fx:id="pnComplete" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <AnchorPane fx:id="pnComplete" prefHeight="200.0" prefWidth="200.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
                   <Label fx:id="lblCompleted" alignment="CENTER" contentDisplay="CENTER" prefHeight="27.0" prefWidth="239.0" text="Exposure Creation Completed" textAlignment="CENTER" AnchorPane.leftAnchor="170.0" AnchorPane.rightAnchor="170.0" AnchorPane.topAnchor="14.0">
                      <font>
@@ -61,7 +61,7 @@
                   <Label fx:id="lblFinalDuration" alignment="CENTER" layoutX="286.0" layoutY="41.0" text="Duration: 00000000000000000000000" AnchorPane.bottomAnchor="80.0" AnchorPane.leftAnchor="150.0" AnchorPane.rightAnchor="150.0" AnchorPane.topAnchor="45.0" />
                </children>
             </AnchorPane>
-            <AnchorPane fx:id="pnProgress" prefHeight="200.0" prefWidth="200.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <AnchorPane fx:id="pnProgress" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                <children>
                   <ProgressBar fx:id="pgbExposureProgress" prefHeight="26.0" prefWidth="359.0" progress="0.0" AnchorPane.bottomAnchor="90.0" AnchorPane.leftAnchor="70.0" AnchorPane.rightAnchor="70.0" AnchorPane.topAnchor="25.0" />
                   <Label alignment="CENTER_RIGHT" layoutX="70.0" layoutY="83.0" maxWidth="90.0" minWidth="90.0" prefWidth="90.0" text="Elapsed Time:" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="55.0" />
@@ -70,6 +70,7 @@
                   <Label fx:id="lblRemaining" layoutX="150.0" layoutY="109.0" text="999 Hours 59 Minutes 59 Seconds" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="150.0" />
                   <Label alignment="CENTER_RIGHT" layoutX="95.0" layoutY="129.0" maxWidth="90.0" minWidth="90.0" prefWidth="90.0" text="Duration:" textAlignment="RIGHT" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="55.0" />
                   <Label fx:id="lblDuration" layoutX="148.0" layoutY="126.0" text="999 Hours 59 Minutes 59 Seconds" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="150.0" />
+                  <Button fx:id="btnCompleteExposure" layoutX="426.0" layoutY="73.0" mnemonicParsing="false" prefHeight="43.0" prefWidth="90.0" text="Complete" />
                </children>
             </AnchorPane>
          </children></AnchorPane>

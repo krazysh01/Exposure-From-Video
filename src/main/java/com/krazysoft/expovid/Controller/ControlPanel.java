@@ -70,6 +70,8 @@ public class ControlPanel extends AnchorPane {
     public Button btnSave;
     @FXML
     public Button btnView;
+    @FXML
+    public Button btnCompleteExposure;
 
     private Exposure exposure;
     private boolean exposureCreationComplete;
@@ -172,6 +174,7 @@ public class ControlPanel extends AnchorPane {
             btnAverage.setDisable(true);
             pnProgress.setVisible(true);
             pnComplete.setVisible(false);
+            btnCompleteExposure.setOnAction(completeExposureEvent);
             long durationFrames = (long) (spnExposureDuration.getValue() * exposure.getFramerate());
             int sampleRate = (int) sldSampleRate.getValue();
             exposure.setStartTime((long) (spnStartTime.getValue() * 1000000));
@@ -247,6 +250,15 @@ public class ControlPanel extends AnchorPane {
                     }
             );
             stage.showAndWait();
+        }
+    };
+
+    EventHandler<ActionEvent> completeExposureEvent = new EventHandler<ActionEvent>() {
+        @Override
+        public void handle(ActionEvent event) {
+            if(exposure.isRunning()){
+                exposure.completeExposureEarly();
+            }
         }
     };
 

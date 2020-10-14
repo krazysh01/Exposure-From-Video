@@ -254,6 +254,10 @@ public abstract class Exposure {
         return getTimeStamp(getEstimatedRemainingTime());
     }
 
+    public void completeExposureEarly() {
+        complete = true;
+    }
+
     public static BufferedImage convertFrameToBufferedImage(Frame frame) {
         Java2DFrameConverter converter = new Java2DFrameConverter();
         return converter.convert(frame);
