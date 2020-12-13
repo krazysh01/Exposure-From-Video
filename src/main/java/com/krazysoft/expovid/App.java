@@ -4,11 +4,13 @@ import com.krazysoft.expovid.Controller.ControlPanel;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.opencv.osgi.OpenCVNativeLoader;
 
 public class App extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+
         ControlPanel controlPanel = new ControlPanel();
         Scene scene = new Scene(controlPanel);
         primaryStage.setScene(scene);

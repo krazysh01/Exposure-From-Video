@@ -1,14 +1,11 @@
 package com.krazysoft.expovid.Manager;
 
+import com.krazysoft.expovid.Exposures.*;
 import com.krazysoft.expovid.Interfaces.VideoPlayer;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
-import org.bytedeco.javacpp.indexer.UByteRawIndexer;
 import org.bytedeco.javacv.*;
-import org.bytedeco.opencv.global.opencv_core;
 import org.bytedeco.opencv.opencv_core.Mat;
-import org.bytedeco.opencv.opencv_core.MatExpr;
-import org.bytedeco.opencv.opencv_core.MatVector;
 
 import java.awt.image.BufferedImage;
 
@@ -16,7 +13,7 @@ import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;
 
 public abstract class Exposure {
 
-    public enum ExposureMethod {Additive, Average, Experimental}
+    public enum ExposureType {Additive, Average, ExperimentalGray, ExperimentalColour}
 
     protected VideoPlayer player;
     protected FFmpegFrameGrabber grabber;
@@ -24,7 +21,7 @@ public abstract class Exposure {
     private boolean running;
     private boolean complete;
     private volatile boolean interrupted;
-    protected Mat exposure;
+    protected ExposureMethod exposureMethod;
     private double exposureProgress;
     private long elapsedTime;
     private long estimatedDuration;
@@ -73,11 +70,10 @@ public abstract class Exposure {
         return startTime;
     }
 
-    public Thread createExposure(long duration, int sampleRate, ExposureMethod method) {
+    public Thread createExposure(long duration, int sampleRate, ExposureType method) {
         running = true;
         complete = false;
         interrupted = false;
-        exposure = null;
         Runnable exposureRunnable = new Runnable() {
             @Override
             public void run() {
@@ -91,13 +87,10 @@ public abstract class Exposure {
                     double skipFrames = (int) getFramerate() - (sampleRate * 1.0);
                     double jumpFrames = skipFrames / (sampleRate * 1.0);
                     double waitFrames = 1;
-//                    System.out.println("Frame Rate: " + getFramerate());
-//                    System.out.println("After every " + waitFrames + " frame/s skip " + jumpFrames + " frame/s");
                     if(jumpFrames < 1){
                         waitFrames = waitFrames / jumpFrames;
                         jumpFrames = 1;
                     }
-//                    System.out.println("After every " + waitFrames + " frame/s skip " + jumpFrames + " frame/s");
                     int sinceLastSkip = 0;
                     double skipBank = jumpFrames;
                     double waitBank = waitFrames;
@@ -106,36 +99,35 @@ public abstract class Exposure {
                     if (grabber.getLengthInFrames() < totalSample) {
                         totalSample = grabber.getLengthInFrames();
                     }
-//                    System.out.println("Total Sample Frames: " + totalSample);
                     OpenCVFrameConverter.ToMat matConverter = new OpenCVFrameConverter.ToMat();
                     exposureProgress = 0;
                     elapsedTime = 0;
                     estimatedDuration = 0;
                     long lastLoop = System.currentTimeMillis();
-//                    System.out.println("Starting Creation");
+                    switch (method) {
+                        case Average:
+                            exposureMethod = new AverageExposureMethod();
+                            break;
+                        case Additive:
+                            exposureMethod = new AdditiveExposureMethod();
+                            break;
+                        case ExperimentalGray:
+                            exposureMethod = new ExperimentalGrayExposureMethod();
+                            break;
+                        case ExperimentalColour:
+                            exposureMethod = new ExperimentalColourExposureMethod();
+                            break;
+                    }
                     while (!complete && !Thread.interrupted() && !interrupted) {
                         elapsedTime += System.currentTimeMillis() - lastLoop;
                         lastLoop = System.currentTimeMillis();
                         Frame _frame = grabber.grabImage();
                         if (_frame == null || _frame.image == null) {
-//                            System.out.println("No Image");
                             continue;
                         }
                         Mat frame = matConverter.convert(_frame);
                         sampleCount++;
-//                        System.out.println(grabber.getFrameNumber());
-//                        System.out.println("Frames Identical: "+areMatIdentical(exposure, frame));
-                        switch (method) {
-                            case Average:
-                                exposure = CombineAverage(exposure, frame, sampleCount);
-                                break;
-                            case Additive:
-                                exposure = CombineAdditive(exposure, frame);
-                                break;
-                            case Experimental:
-                                exposure = CombineExperimental(exposure, frame, sampleCount);
-                                break;
-                        }
+                        exposureMethod.Combine(frame);
                         exposureProgress = (sampleCount * 1.0) / totalSample;
                         estimatedDuration = (long) (elapsedTime / exposureProgress);
                         if (sampleCount >= totalSample) {
@@ -146,7 +138,6 @@ public abstract class Exposure {
                         sinceLastSkip++;
                         if(sinceLastSkip >= (int) waitBank) {
                             int skipCount = (int) Math.round(skipBank);
-//                            System.out.println("Skipping " + skipCount + " Frames after " + sinceLastSkip+ " frames");
                             for(int i = 0; i < skipCount; i++){
                                 grabber.grabImage();
                             }
@@ -154,92 +145,12 @@ public abstract class Exposure {
                             skipBank += jumpFrames;
                             waitBank -= (int) waitBank;
                             waitBank += waitFrames;
-//                            System.out.println("Next Skip: " + skipBank);
                             sinceLastSkip = 0;
                         }
-                    }
-                    if (complete) {
-//                        System.out.println("Exposure Complete");
-                    } else {
-//                        System.out.println("Exposure Interrupted");
                     }
                 } catch (FrameGrabber.Exception e) {
                     System.err.println(e.getLocalizedMessage());
                 }
-            }
-
-            Mat CombineAdditive(Mat exposure, Mat frame) {
-                if(exposure == null){
-                    return frame.clone();
-                }
-                if(areMatIdentical(exposure, frame)) {
-                    //System.out.println("Frames are Identical");
-                    return exposure.clone();
-                }
-                Mat brightest = exposure.clone();
-//                System.out.println("New Frame");
-                UByteRawIndexer brightestIndexer = brightest.createIndexer();
-                UByteRawIndexer exposureIndexer = exposure.createIndexer();
-                UByteRawIndexer frameIndexer = frame.createIndexer();
-                for (int y = 0; y < frame.rows(); y++) {
-                    for (int x = 0; x < frame.cols(); x++) {
-                        int[] exposurePixel = new int[exposure.channels()];
-                        for (int c = 0; c < exposure.channels(); c++) {
-                            exposurePixel[c] = exposureIndexer.get(y, x, c);
-                        }
-                        int[] framePixel = new int[frame.channels()];
-                        for (int c = 0; c < frame.channels(); c++) {
-                            framePixel[c] = frameIndexer.get(y, x, c);
-                        }
-                        double exposureBrightness = calculatePixelBrightness(exposurePixel);
-                        double frameBrightness = calculatePixelBrightness(framePixel);
-                        if (frameBrightness > exposureBrightness) {
-                            for (int c = 0; c < exposure.channels(); c++) {
-                                brightestIndexer.put(y, x, c, framePixel[c]);
-                            }
-                        }
-                    }
-                }
-                return brightest;
-            }
-
-            Mat CombineAverage(Mat exposure, Mat frame, long frameCount) {
-                if(exposure == null){
-                    return frame.clone();
-                }
-                double frame_average = 1.0 / frameCount;
-                Mat result = new Mat();
-//                double frame_average = 0.5;
-                opencv_core.addWeighted(frame, frame_average, exposure, 1 - frame_average, 0.0, result);
-                return result;
-            }
-
-            private Mat CombineExperimental(Mat exposure, Mat frame, long sampleCount) {
-                if(exposure == null){
-                    return frame.clone();
-                }
-                Mat average = exposure.clone();
-//                System.out.println("New Frame");
-                UByteRawIndexer averageIndexer = average.createIndexer();
-                UByteRawIndexer exposureIndexer = exposure.createIndexer();
-                UByteRawIndexer frameIndexer = frame.createIndexer();
-                for (int y = 0; y < frame.rows(); y++) {
-                    for (int x = 0; x < frame.cols(); x++) {
-                        int[] exposurePixel = new int[exposure.channels()];
-                        for (int c = 0; c < exposure.channels(); c++) {
-                            exposurePixel[c] = exposureIndexer.get(y, x, c);
-                        }
-                        int[] framePixel = new int[frame.channels()];
-                        for (int c = 0; c < frame.channels(); c++) {
-                            framePixel[c] = frameIndexer.get(y, x, c);
-                        }
-                        for (int c = 0; c < exposure.channels(); c++) {
-                            int pixelAverage = (int) ((int) ((sampleCount * exposurePixel[c]) + (1 * framePixel[c])) / (sampleCount + 1));
-                            averageIndexer.put(y, x, c, pixelAverage);
-                        }
-                    }
-                }
-                return average;
             }
 
         };
@@ -249,7 +160,7 @@ public abstract class Exposure {
     }
 
     public Mat getExposure() {
-        return exposure;
+        return exposureMethod.finalizeExposure();
     }
 
     public double getExposureProgress() {
@@ -303,31 +214,6 @@ public abstract class Exposure {
             return SwingFXUtils.toFXImage(image, null);
         else
             return null;
-    }
-
-    private static double calculatePixelBrightness(int[] pixel) {
-        return (pixel[0] * 0.3) + (pixel[1] * 0.59) + (pixel[2] * 0.11);
-    }
-
-    private static boolean areMatIdentical(Mat a, Mat b) {
-        if( a == null || b == null){
-            return false;
-        }
-        if( a.cols() == b.cols() && a.rows() == b.rows() && a.channels() == b.channels()){
-            MatExpr result = opencv_core.subtract(a, b);
-            MatVector diff = new MatVector();
-            opencv_core.split(result.asMat(), diff);
-            if(opencv_core.countNonZero(diff.get(0)) == 0
-                    && opencv_core.countNonZero(diff.get(1)) == 0
-                    && opencv_core.countNonZero(diff.get(2)) == 0)
-            {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
     }
 
     private static String getTimeStamp(long time) {

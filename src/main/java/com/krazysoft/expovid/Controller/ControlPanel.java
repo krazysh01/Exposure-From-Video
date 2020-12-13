@@ -4,6 +4,7 @@ import com.krazysoft.expovid.Manager.ApplicationTimer;
 import com.krazysoft.expovid.Manager.Exposure;
 import com.krazysoft.expovid.Manager.ExposureFromVideo;
 import com.krazysoft.expovid.Manager.Updatable;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -49,11 +50,7 @@ public class ControlPanel extends AnchorPane {
     @FXML
     public Slider sldSampleRate;
     @FXML
-    public RadioButton btnAverage;
-    @FXML
-    public RadioButton btnAdditive;
-    @FXML
-    public RadioButton btnExperimental;
+    public ComboBox cmbMethod;
     @FXML
     public Button btnSelectVideo;
     @FXML
@@ -99,9 +96,7 @@ public class ControlPanel extends AnchorPane {
         spnExposureDuration.setDisable(true);
         spnStartTime.setDisable(true);
         sldSampleRate.setDisable(true);
-        btnAdditive.setDisable(true);
-        btnExperimental.setDisable(true);
-        btnAverage.setDisable(true);
+        cmbMethod.setDisable(true);
         btnSelectVideo.setOnAction(videoSelectActionEvent);
         pnStart.setVisible(true);
         pnComplete.setVisible(false);
@@ -155,10 +150,8 @@ public class ControlPanel extends AnchorPane {
                     sldSampleRate.setValue(Math.round(newValue.doubleValue()));
                     txtFrameRate.setText(Math.round(newValue.doubleValue()) + " FPS");
                 });
-                btnAdditive.setDisable(false);
-                btnAverage.setDisable(false);
-                btnExperimental.setDisable(false);
-                btnAverage.setSelected(true);
+                cmbMethod.setItems(FXCollections.observableArrayList(Exposure.ExposureType.values()));
+                cmbMethod.setDisable(false);
             }
         }
     };
@@ -174,9 +167,7 @@ public class ControlPanel extends AnchorPane {
             spnExposureDuration.setDisable(true);
             spnStartTime.setDisable(true);
             sldSampleRate.setDisable(true);
-            btnAdditive.setDisable(true);
-            btnAverage.setDisable(true);
-            btnExperimental.setDisable(true);
+            cmbMethod.setDisable(true);
             pnProgress.setVisible(true);
             pnComplete.setVisible(false);
             btnCompleteExposure.setOnAction(completeExposureEvent);
@@ -185,14 +176,8 @@ public class ControlPanel extends AnchorPane {
             exposure.setStartTime((long) (spnStartTime.getValue() * 1000000));
             exposureCreationComplete = false;
 //            System.out.println("Duration: " + spnExposureDuration.getValue() + "s");
-            Exposure.ExposureMethod method = Exposure.ExposureMethod.Average;
-            if (btnAverage.isSelected()) {
-                method = Exposure.ExposureMethod.Average;
-            } else if (btnAdditive.isSelected()) {
-                method = Exposure.ExposureMethod.Additive;
-            } else if (btnExperimental.isSelected()) {
-                method = Exposure.ExposureMethod.Experimental;
-            }
+            Exposure.ExposureType method = Exposure.ExposureType.Average;
+            method = (Exposure.ExposureType) cmbMethod.getValue();
             exposureThread = exposure.createExposure(durationFrames, sampleRate, method);
             progressUpdater = t -> {
                 pgbExposureProgress.setProgress(exposure.getExposureProgress());
@@ -211,9 +196,7 @@ public class ControlPanel extends AnchorPane {
                     spnExposureDuration.setDisable(false);
                     spnStartTime.setDisable(false);
                     sldSampleRate.setDisable(false);
-                    btnAdditive.setDisable(false);
-                    btnAverage.setDisable(false);
-                    btnExperimental.setDisable(false);
+                    cmbMethod.setDisable(true);
                 }
             };
             ApplicationTimer.getInstance().register(progressUpdater);
